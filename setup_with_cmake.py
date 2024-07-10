@@ -19,8 +19,11 @@ from numpy.distutils.command.build_ext import build_ext as old_build_ext
 
 # Numpy header files
 numpy_lib = os.path.split(np.__file__)[0]
-numpy_include = os.path.join(numpy_lib, "core/include")
-
+# if numpy > 2.0 then underscore is present
+if os.path.exists(os.path.join(numpy_lib, "_core")):
+    numpy_include = os.path.join(numpy_lib, "_core/include")
+else:
+    numpy_include = os.path.join(numpy_lib, "core/include")
 encoding = "utf-8"
 # extract the -j flag and pass save it for running make on the CMake makefile
 # extract -c flag to set compiler
