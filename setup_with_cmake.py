@@ -246,7 +246,12 @@ class ModuleList(object):
         self.module_list.append(Extension(modname, [filename], **self.kwargs))
 
 
-extra_compile_args = ["-mavx"] if not platform.processor() == "arm" else []
+def is_arm():
+    machine = platform.machine().lower()
+    return machine.startswith('arm') or machine.startswith('aarch64')
+
+extra_compile_args = ["-march=armv8-a"] if is_arm() else ["-mavx"]
+
 if False:
     # for bug testing
     extra_compile_args += ["-DF2PY_REPORT_ON_ARRAY_COPY=1"]
