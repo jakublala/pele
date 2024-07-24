@@ -163,9 +163,10 @@ class FindTransitionState(object):
         self.invert_gradient = invert_gradient
         self.hessian_diagonalization = hessian_diagonalization
         if self.verbosity > 0:
-            print(
-                "will compute the lowest eigenvector by diagonalizing the Hessian"
-            )
+            if self.hessian_diagonalization:
+                logger.info("will compute the lowest eigenvector by actually diagonalizing the Hessian")
+            else:
+                logger.info("estimating the lowest eigenvector by Reyleigh Ritz minimization")
 
         self.rmsnorm = 1.0 / np.sqrt(float(len(coords)))
         self.oldeigenvec = None

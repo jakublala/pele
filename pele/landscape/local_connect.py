@@ -257,17 +257,20 @@ class LocalConnect(object):
                 "transition state candidates",
             )
 
-            # if the NEB path has maxima, refine those into transition states
-            if nclimbing > 0:
-                climbing_images = sorted(
-                    climbing_images, reverse=True
-                )  # highest energies first
-                # refine transition state candidates
-                self.res.success = self._refineTransitionStates(
-                    neb, climbing_images
-                )
-            else:
-                self.res.success = False
+            no_NEB = True
+
+            if no_NEB:
+                # if the NEB path has maxima, refine those into transition states
+                if nclimbing > 0:
+                    climbing_images = sorted(
+                        climbing_images, reverse=True
+                    )  # highest energies first
+                    # refine transition state candidates
+                    self.res.success = self._refineTransitionStates(
+                        neb, climbing_images
+                    )
+                else:
+                    self.res.success = False
             if self.res.success:
                 break
 

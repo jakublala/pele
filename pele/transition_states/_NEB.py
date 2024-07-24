@@ -411,7 +411,6 @@ class NEB(object):
             else:
                 return 0.0, g_tot
         else:  # pragma: no cover
-
             # project out parallel part
             gperp = greal - np.dot(greal, t) * t
 
