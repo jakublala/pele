@@ -112,15 +112,14 @@ class LBFGS(object):
         armijo=False,
         armijo_c=1e-4,
         fortran=False,
+        use_wolfe=False,
     ):
         X = X.copy()
         self.X = X
         self.N = len(X)
         self.M = M
         self.pot = pot
-        self._use_wolfe = (
-            False  # this didn't work very well.  should probably remove
-        )
+        self._use_wolfe = use_wolfe # this was added by Jakub
         self._armijo = bool(armijo)
         self._wolfe1 = armijo_c
         self._wolfe2 = 0.99
@@ -398,11 +397,7 @@ class LBFGS(object):
             else:
                 if self.debug:
                     self.logger.warn(
-                        "energy increased, trying a smaller step %s %s %s %s",
-                        E,
-                        E0,
-                        f * stepsize,
-                        nincrease,
+                        f"energy increased, trying a smaller step {E=} {E0=} {f*stepsize=} {nincrease=}"
                     )
                 f /= 10.0
                 nincrease += 1

@@ -406,6 +406,7 @@ class NEB(object):
             E, g_tot = _NEB_utils.neb_force(
                 t, greal, d_left, g_left, d_right, g_right, self.k, self.dneb
             )
+            # logger.debug(f"Spring energy amounts to: {E}")
             if self.with_springenergy:
                 return E, g_tot
             else:
