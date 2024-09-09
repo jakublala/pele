@@ -128,6 +128,8 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         res = self.quench(self.coords_after_step)
         self.result.nfev += res.nfev
+        self.result.last_nsteps = res.nsteps
+        self.result.last_nfev = res.nfev
         #        if isinstance(res, tuple): # for compatability with old and new quenchers
         #            res = res[4]
         self.trial_coords = res.coords

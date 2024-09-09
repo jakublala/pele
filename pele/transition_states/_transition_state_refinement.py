@@ -361,18 +361,7 @@ class FindTransitionState(object):
 
             if self.iprint > 0:
                 if (i + 1) % self.iprint == 0:
-                    ostring = (
-                        "findTS: %3d E %9g rms %8g eigenvalue %9g rms perp %8g grad par %9g overlap %g"
-                        % (
-                            i,
-                            E,
-                            rms,
-                            self.eigenval,
-                            tangentrms,
-                            gradpar,
-                            overlap,
-                        )
-                    )
+                    ostring = f"findTS: {i=} {E=} {rms=} {self.eigenval=} {tangentrms=} {gradpar=} {overlap=}"
                     extra = "  Evec search: %d rms %g" % (
                         self.leig_result.nfev,
                         self.leig_result.rms,
@@ -423,14 +412,7 @@ class FindTransitionState(object):
 
         # print some data
         if self.verbosity > 0 or self.iprint > 0:
-            logger.info(
-                "findTransitionState done: %s %s %s %s %s",
-                iend,
-                E,
-                rms,
-                "eigenvalue",
-                self.eigenval,
-            )
+            logger.info(f"findTransitionState done: {iend=} {E=} {rms=} {self.eigenval=}")
 
         success = True
         # check if results make sense

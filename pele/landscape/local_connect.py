@@ -211,16 +211,19 @@ class LocalConnect(object):
         )
         neb = neb.run()
 
-        neb.MakeAllMaximaClimbing()
+        # Jakub: adjustment
+        # neb.MakeAllMaximaClimbing()
+        # neb.MakeHighestImageClimbing()
 
-        if self.reoptimize_climbing > 0:
-            logger.info(
-                "optimizing climbing images for a small number of steps"
-            )
-            # NEBquenchParams["nsteps"] = self.reoptimize_climbing
-            # neb.optimize(**NEBquenchParams)
-            neb.quenchParams["nsteps"] = self.reoptimize_climbing
-            neb.optimize()
+        # Jakub: by default we will be doing CI-NEB
+        # if self.reoptimize_climbing > 0:
+        #     logger.info(
+        #         "optimizing climbing images for a small number of steps"
+        #     )
+        #     # NEBquenchParams["nsteps"] = self.reoptimize_climbing
+        #     # neb.optimize(**NEBquenchParams)
+        #     neb.quenchParams["nsteps"] = self.reoptimize_climbing
+        #     neb.optimize()
 
         # get the transition state candidates from the NEB result
         climbing_images = [
@@ -257,9 +260,71 @@ class LocalConnect(object):
                 "transition state candidates",
             )
 
-            no_NEB = True
+            if nclimbing == 0:
+                logger.info("no transition states found")
+                self.res.success = False
+                continue
 
-            if no_NEB:
+            only_NEB = False
+
+
+            hess = self.neb.potential.NumericalHessian(neb.coords[climbing_images[0][1]], tangent_space=False)
+            from pele.utils.hessian import get_eig
+            evals, evecs = get_eig(hess)
+            logger.info(f"eigenvalues: {evals}")
+            logger.info(f"eigenvectors: {evecs}")
+            
+
+
+            from pele.optimize import Result
+            if only_NEB:
+                # need to convert neb, climbing_iamges results into the result object
+                pass
+                
+                # for minima
+                res1 = Result()
+                # res.nsteps = self.iter_number
+                # res.nfev = self.funcalls
+                res1.coords = min1.coords
+                res1.energy = min1.energy
+                # res.rms = self.rms
+                # res.grad = self.G
+                # res.H0 = self.H0
+                res1.success = True
+
+                res2 = Result()
+                res2.coords = min2.coords
+                res2.energy = min2.energy
+                res2.success = True
+
+                # for TS
+                ts = Result()
+                # note climbing_image index is coords-based, not active-based (i.e. includes the ends)
+                ts.coords = neb.coords[climbing_images[0][1]]
+                ts.energy = climbing_images[0][0]
+
+                from pele.utils.hessian import get_sorted_eig
+                eigenval, evec = get_sorted_eig(hess)
+
+                # is there any eigenvalue lower than a tolerance (default=-0.1) than it's not a TS
+                import numpy as np
+                if np.any(eigenval < -0.1):
+                    ts.success = False
+                    self.res.success = False
+                    logger.warning(f"Transition state has {len(eigenval[eigenval < -0.1])} negative eigenvalues, but should only have one.")
+                else:
+                    ts.eigenval = eigenval
+                    ts.eigenvec = evec
+                    # res.grad = grad
+                    # res.rms = rms
+                    # res.nsteps = iend
+                    ts.success = True
+                    # res.nfev = self.nfev
+                    self.res.new_transition_states.append((ts, res1, res2))
+                    self.res.success = True
+                # TODO: considering the check for falling off minima
+
+            else:
                 # if the NEB path has maxima, refine those into transition states
                 if nclimbing > 0:
                     climbing_images = sorted(
@@ -271,9 +336,10 @@ class LocalConnect(object):
                     )
                 else:
                     self.res.success = False
+            
             if self.res.success:
                 break
-
+        
         return self.res
 
 

@@ -83,7 +83,7 @@ class NEBDriver(object):
         image_density=10.0,
         iter_density=10.0,
         verbose=0,
-        factor=1.05,
+        factor=1.0,
         NEBquenchParams=None,
         adjustk_freq=0,
         adjustk_tol=0.1,

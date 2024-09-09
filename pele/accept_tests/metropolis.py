@@ -5,6 +5,8 @@ import numpy as np
 
 __all__ = ["Metropolis"]
 
+import logging
+logger = logging.getLogger("pele.metropolis")
 
 class Metropolis(object):
     """Accept steps based on the metropolis criterion
@@ -30,6 +32,10 @@ class Metropolis(object):
             return True
         acceptstep = True
         wcomp = old_div((Enew - Eold), self.temperature)
+        # Jakub's fix for too large wcomp
+        if wcomp > 100:
+            logger.warning(f"wcomp is too large: {wcomp}")
+            wcomp = 100
         w = min(1.0, np.exp(-wcomp))
         rand = self.random()
         if rand > w:

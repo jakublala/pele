@@ -27,6 +27,9 @@ __all__ = [
     "make_sparse",
 ]
 
+import logging
+logger = logging.getLogger('utils.hessian')
+
 
 def get_eigvals(hess, **kwargs):
     """return the eigenvalues of a Hessian (symmetric)

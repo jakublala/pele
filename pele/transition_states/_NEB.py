@@ -118,7 +118,7 @@ class NEB(object):
             quenchParams = dict()
         self.distance = distance
         self.potential = potential
-        self.k = k
+        self.k = [k] * (len(path) - 1)
         self.verbose = verbose
         self.use_minimizer_callback = use_minimizer_callback
 
@@ -385,6 +385,8 @@ class NEB(object):
         J. Chem. Phys. 120, 2082 (2004); doi: 10.1063/1.1636455
 
         """
+        # if hasattr(self.k, "__len__"):
+
 
         # construct tangent vector
         d_left, g_left = self.distance(
@@ -398,9 +400,10 @@ class NEB(object):
 
         t = self.tangent(image[0], left[0], right[0], g_left, g_right)
         if isclimbing:
-            return greal - 2.0 * np.dot(greal, t) * t
+            # logger.debug(f"Image {icenter} is a climbing image, applying the true gradient.")
+            return 0.0, greal - 2.0 * np.dot(greal, t) * t
 
-        if True:
+        if False:
             from . import _NEB_utils
 
             E, g_tot = _NEB_utils.neb_force(
@@ -416,12 +419,12 @@ class NEB(object):
             gperp = greal - np.dot(greal, t) * t
 
             # parallel part of spring force
-            gs_par = self.k * (d_left - d_right) * t
+            gs_par = (d_left * self.k[icenter - 1] - d_right * self.k[icenter]) * t
 
             g_tot = gperp + gs_par
 
             if self.dneb:
-                g_spring = self.k * (g_left + g_right)
+                g_spring = self.k[icenter - 1] * g_left + self.k[icenter] * g_right
 
                 # perpendicular part of spring
                 gs_perp = g_spring - np.dot(g_spring, t) * t
@@ -431,7 +434,7 @@ class NEB(object):
                 )
 
             if self.with_springenergy:
-                E = 0.5 / self.k * (d_left**2 + d_right**2)
+                E = 0.5 * (self.k[icenter - 1] * d_left**2 + self.k[icenter] * d_right**2)
             else:
                 E = 0.0
             return E, g_tot
@@ -440,8 +443,9 @@ class NEB(object):
         self.step += 1
         if self.adjustk_freq <= 0:
             return
-        if self.step % 5 == 0:
-            self._adjust_k(coords)
+        else:
+            if self.step % self.adjustk_freq == 0:
+                self._adjust_k(coords)
 
     def _adjust_k(self, coords):
         tmp = self.coords.copy()
